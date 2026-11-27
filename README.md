@@ -16,7 +16,7 @@
 
 ## Overview
 
-**A36 Good Lock Spoofer** is an LSPosed module that makes **Good Lock** and **Galaxy Store** see a Samsung Galaxy A36 identity (`SM-A366B`, CSC `EUX`) in order to make Good Lock and its modules available on Samsung devices where the catalogue may otherwise be restricted.
+**A36 Good Lock Spoofer** is an LSPosed module that makes **Good Lock** and **Galaxy Store** see a Samsung Galaxy A36 identity (`SM-A366B`) in order to make Good Lock and its modules available on Samsung devices where the catalogue may otherwise be restricted.
 
 The spoof is applied inside the two targeted apps. It does not intentionally change the device identity seen by unrelated apps or the system interface.
 
@@ -37,17 +37,14 @@ Compatibility is not determined by the Android version alone. Root method, Zygis
 ## What it changes
 
 - Spoofs selected build identity fields to **Galaxy A36 5G (`SM-A366B`)**.
-- Spoofs the CSC / sales region as **EUX** and related product-code values.
-- Hooks selected Samsung floating-feature checks in the targeted apps.
-- Returns German SIM/network operator information to the targeted apps.
 - Targets only these package names:
   - `com.samsung.android.goodlock`
   - `com.sec.android.app.samsungapps`
-- Runs a one-time Good Lock data cleanup on its first hooked launch, described below.
+- Runs a one-time local data cleanup for **Galaxy Store** and **Good Lock** on first hooked launch, described below.
 
-### Important: one-time Good Lock data reset
+### Important: one-time data reset
 
-On the first Good Lock launch after the module's hook is active, the module attempts to delete Good Lock's local:
+On the first launch of Galaxy Store (after enabling the module) and of Good Lock (after install), the module attempts to delete that app's local:
 
 `shared_prefs`, `databases`, `cache`, `code_cache`, `files`, and `no_backup` directories.
 
