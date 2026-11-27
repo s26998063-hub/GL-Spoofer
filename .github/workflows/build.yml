@@ -13,12 +13,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Unpack source archive if present
+      - name: Unpack source archive
         run: |
           if [ -f "A36GoodLockSpoofer-v3.zip" ]; then
             unzip -o A36GoodLockSpoofer-v3.zip -d .
           elif [ -f "A36GoodLockSpoofer.zip" ]; then
             unzip -o A36GoodLockSpoofer.zip -d .
+          else
+            echo "Source ZIP not found!"
+            exit 1
           fi
 
       - name: Set up JDK 17
@@ -32,16 +35,59 @@ jobs:
         with:
           gradle-version: '8.4'
 
-      - name: Build Debug & Release APK
-        run: gradle assembleDebug assembleRelease
+      - name: Restore signing keystore
+        env:
+          SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/signing"
+          echo "$SIGNING_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/signing/release-key.jks"
+          test -s "$RUNNER_TEMP/signing/release-key.jks"
 
-      - name: Rename output APK
+      - name: Configure release signing
+        env:
+          STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+        run: |
+          cat >> app/build.gradle <<'EOF'
+
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file(System.getenv("RUNNER_TEMP") + "/signing/release-key.jks")
+                      storePassword System.getenv("STORE_PASSWORD")
+                      keyAlias System.getenv("KEY_ALIAS")
+                      keyPassword System.getenv("KEY_PASSWORD")
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                  }
+              }
+          }
+          EOF
+
+      - name: Build Release APK
+        run: gradle assembleRelease
+
+      - name: Verify APK signature
+        run: |
+          APK="app/build/outputs/apk/release/app-release.apk"
+          test -s "$APK"
+          apksigner verify --verbose "$APK"
+
+      - name: Prepare APK
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/A36GoodLockSpoofer.apk
+          cp app/build/outputs/apk/release/app-release.apk \
+            dist/A36GoodLockSpoofer.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: A36GoodLockSpoofer-APK
+          name: A36GoodLockSpoofer-Release
           path: dist/A36GoodLockSpoofer.apk
+          if-no-files-found: error
+          retention-days: 30
