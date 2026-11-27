@@ -13,9 +13,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Unpack source ZIP
+      - name: Unpack source archive if present
         run: |
-          unzip -o A36GoodLockSpoofer.zip -d project_src
+          if [ -f "A36GoodLockSpoofer-v3.zip" ]; then
+            unzip -o A36GoodLockSpoofer-v3.zip -d .
+          elif [ -f "A36GoodLockSpoofer.zip" ]; then
+            unzip -o A36GoodLockSpoofer.zip -d .
+          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -28,12 +32,16 @@ jobs:
         with:
           gradle-version: '8.4'
 
-      - name: Build Debug APK
-        working-directory: ./project_src
-        run: gradle assembleDebug
+      - name: Build Debug & Release APK
+        run: gradle assembleDebug assembleRelease
 
-      - name: Upload APK artifact
+      - name: Rename output APK
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/A36GoodLockSpoofer.apk
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: A36GoodLockSpoofer-debug
-          path: project_src/app/build/outputs/apk/debug/*.apk
+          name: A36GoodLockSpoofer-APK
+          path: dist/A36GoodLockSpoofer.apk
