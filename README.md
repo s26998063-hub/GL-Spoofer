@@ -1,6 +1,6 @@
 <div align="center">
 
-# A36 Good Lock Spoofer
+# GL Spoofer (A36 Good Lock Spoofer)
 
 **LSPosed module · Samsung Galaxy · Good Lock access**
 

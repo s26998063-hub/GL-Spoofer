@@ -1,4 +1,4 @@
-name: Build A36 Good Lock Spoofer APK
+name: Build GL Spoofer APK
 
 on:
   push:
@@ -82,12 +82,12 @@ jobs:
         run: |
           mkdir -p dist
           cp app/build/outputs/apk/release/app-release.apk \
-            dist/A36GoodLockSpoofer.apk
+            dist/GLSpoofer.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: A36GoodLockSpoofer-Release
-          path: dist/A36GoodLockSpoofer.apk
+          name: GLSpoofer-Release
+          path: dist/GLSpoofer.apk
           if-no-files-found: error
           retention-days: 30
